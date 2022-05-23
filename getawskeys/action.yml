@@ -30,7 +30,7 @@ runs:
         environment-variable: AWS_ACCESS_KEY_ID
 
     - name: Retrieve AWS_SECRET_ACCESS_KEY
-      uses: codeshare22/cert-manager/getpulumivariable@main            
+      uses: codeshare22/customactions/getpulumivariable@main            
       with:
         stack-name: ${{ inputs.stack-name }}
         infra-path: ${{ inputs.infra-path }}
