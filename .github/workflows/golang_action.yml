@@ -29,6 +29,11 @@ on:
             goprivate:
                 required: true
                 type: string
+        secrets:
+            GIT_BUILDBOT_TOKEN:
+              required: true        
+            PULUMI_ACCESS_TOKEN:
+              required: true        
 jobs:
     preview:
         name: preview
