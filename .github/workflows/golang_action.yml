@@ -39,7 +39,12 @@ jobs:
           GIT_BUILDBOT_TOKEN: ${{ secrets.GIT_BUILDBOT_TOKEN }}
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
         steps:
-            - uses: actions/checkout@v2
+            - name: Echo some fields
+              run: |
+                echo repository=${{ github.repository }}
+                echo repository_owner=${{ github.repository_owner }}
+
+            - uses: actions/checkout@v3
               with:
                   persist-credentials: false
 
