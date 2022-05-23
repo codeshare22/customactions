@@ -1,0 +1,44 @@
+name: Go build with versioning
+
+description: Compile a go program and embed version info
+inputs:
+  compile-path:
+      description: The path to the source code
+      required: false
+      default: ./
+  output-path:
+      description: The path for the output
+      required: false
+      default: ./
+  version-root:
+      description: The golang root project
+      required: true
+  architecture:
+      description: The architecture (amd64 or arm64)
+      required: false      
+      default: amd64
+
+runs:
+  using: composite
+  steps:
+  - name: Set current date as env variable
+    run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
+    shell: bash
+
+  - name: Echo current date
+    run: echo ${{ env.NOW }}
+    shell: bash
+
+  - name: Build (Linux, ${{ inputs.architecture }})
+    run: |
+      pushd ${{ inputs.compile-path }}
+      env CGO_ENABLED=0 GOOS=linux GOARCH=${{ inputs.architecture }} go build -o ${{ inputs.output-path }}/${{ inputs.architecture }}/ -ldflags "-X ${{ inputs.version-root }}/version.Name=${{ inputs.app-name }} -X ${{ inputs.version-root }}/version.Arch=linux/${{ inputs.architecture }} -X ${{ inputs.version-root }}/version.Sha1ver=${{ github.sha }} -X ${{ inputs.version-root }}/version.BuildTime=${{ env.NOW }} -X ${{ inputs.version-root }}/version.RunNumber=${{ github.run_number }} -X ${{ inputs.version-root }}/version.RunId=${{ github.run_id }} -X ${{ inputs.version-root }}/version.RunAttempt=${{ github.run_attempt }} -X ${{ inputs.version-root }}/version.GitRef=${{ github.ref }}" -v ./...
+      popd
+    shell: bash
+
+  - name: Test
+    run: |
+      pushd ${{ inputs.compile-path }}
+      go test -v ./...
+      popd
+    shell: bash

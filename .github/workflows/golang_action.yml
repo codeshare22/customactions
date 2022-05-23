@@ -1,0 +1,162 @@
+name: Golang Reusable Workflow
+
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: true
+                type: string
+            preview-only:
+                default: false
+                required: false
+                type: boolean
+            pulumi-stack:
+                required: true
+                type: string
+            compile-path:
+                required: true
+                type: string
+            app-name:
+                required: true
+                type: string
+            architecture:
+                required: false
+                default: amd64
+                type: string
+            version-root:
+                required: true
+                type: string
+            goprivate:
+                required: true
+                type: string
+jobs:
+    preview:
+        name: preview
+        runs-on: ubuntu-latest
+        env:
+          CurrentDate: $(date +'%Y-%m-%dT%H:%M:%S')
+          GOPRIVATE: ${{ inputs.goprivate }}
+          GIT_BUILDBOT_TOKEN: ${{ secrets.GIT_BUILDBOT_TOKEN }}
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  persist-credentials: false
+
+            - name: Set up Go
+              uses: actions/setup-go@v2
+              with:
+                go-version: 1.17
+                  
+            - name: Grant access to private repo
+              run: git config --global url.https://$GIT_BUILDBOT_TOKEN@github.com/.insteadOf https://github.com/
+
+            - name: Build
+              uses: codeshare22/customactions/gobuild@main
+              with:
+                  compile-path: ${{ inputs.compile-path }}
+                  output-path: ../dist
+                  version-root: ${{ inputs.version-root }}
+
+
+            - name: Prepare Docker
+              run: |
+                mkdir -p output/
+                cp dist/${{ inputs.architecture }}/* output/
+                cp ${{ inputs.compile-path }}/docker/config*.yml output/
+
+            # - name: Print working directory
+            #   run: |
+            #        pwd
+
+            - name: Get AWS Keys
+              uses: codeshare22/customactions/getawskeys@main
+              with:
+                  stack-name: ${{ inputs.pulumi-stack }}
+                  install-pulumi: true
+
+
+            - uses: pulumi/actions@v3
+              with:
+                  command: preview
+                  work-dir: ./infra/
+                  stack-name: ${{ inputs.pulumi-stack }}
+
+            # - name: Print working directory
+            #   run: |
+            #        pwd
+            #        ls -l .
+            #        ls -lR output/
+
+            - name: Tar files
+              run: tar -cvf output.tar output/
+
+            - name: Upload result of deploy job
+              uses: actions/upload-artifact@v3
+              with:
+                name: output
+                path: output.tar
+                retention-days: 2
+
+
+    deploy:
+        name: deploy
+        if: ${{ inputs.preview-only == false }}
+        needs: preview
+        runs-on: ubuntu-latest
+        environment: ${{ inputs.environment }}
+        env:
+          CurrentDate: $(date +'%Y-%m-%dT%H:%M:%S')
+          GOPRIVATE: ${{ inputs.goprivate }}
+          GIT_BUILDBOT_TOKEN: ${{ secrets.GIT_BUILDBOT_TOKEN }}
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                  persist-credentials: false
+
+            - name: Create output directory
+              run: |
+                mkdir -p output/
+
+            - name: Download result of deploy job
+              uses: actions/download-artifact@v3
+              with:
+                name: output
+
+            - name: Untar files
+              run: tar -xvf output.tar 
+
+            - name: Get AWS Keys
+              uses: codeshare22/customactions/getawskeys@main
+              with:
+                  stack-name: ${{ inputs.pulumi-stack }}
+                  install-pulumi: true
+
+            - name: Grant access to private repo
+              run: git config --global url.https://$GIT_BUILDBOT_TOKEN@github.com/.insteadOf https://github.com/
+
+
+            - uses: pulumi/actions@v3
+              with:
+                  command: up
+                  work-dir: ./infra/
+                  stack-name: ${{ inputs.pulumi-stack }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

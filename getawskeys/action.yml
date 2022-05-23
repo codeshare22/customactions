@@ -1,0 +1,39 @@
+name: Get AWS Keys
+
+description: Gets AWS Keys out of pulumi
+inputs:
+  stack-name:
+    description: The pulumi stack
+    required: true
+  infra-path:
+      description: The path to the pulumi infra project
+      required: false
+      default: ./infra/
+  install-pulumi:
+      description: Install pulumi before fetching keys
+      default: "false"
+      required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Install Pulumi CLI
+      uses: pulumi/setup-pulumi@v2            
+      # if: ${{ inputs.install-pulumi == 'true' }}
+ 
+    - name: Retrieve AWS_ACCESS_KEY_ID
+      uses: codeshare22/customactions/getpulumivariable@main            
+      with:
+        stack-name: ${{ inputs.stack-name }}
+        infra-path: ${{ inputs.infra-path }}
+        pulumi-key: aws:accessKey
+        environment-variable: AWS_ACCESS_KEY_ID
+
+    - name: Retrieve AWS_SECRET_ACCESS_KEY
+      uses: codeshare22/cert-manager/getpulumivariable@main            
+      with:
+        stack-name: ${{ inputs.stack-name }}
+        infra-path: ${{ inputs.infra-path }}
+        pulumi-key: aws:secretKey
+        environment-variable: AWS_SECRET_ACCESS_KEY
+

@@ -1,0 +1,26 @@
+name: Get Pulumi Variable
+
+description: Put a pulumi value into the environment
+inputs:
+  stack-name:
+    description: The pulumi stack
+    required: true
+  infra-path:
+      description: The path to the pulumi infra project
+      required: false
+      default: ./infra/
+  pulumi-key:
+      description: The Pulumi key
+      required: true
+  environment-variable:
+      description: The Environment variable
+      required: true      
+
+runs:
+  using: composite
+  steps:
+    - name: Retrieve ${{ inputs.pulumi-key }} into ${{ inputs.environment-variable }}
+      run: |
+            echo  "::add-mask::$(/home/runner/.pulumi/bin/pulumi config get ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}} --non-interactive)"
+            echo "${{ inputs.environment-variable }}=$(/home/runner/.pulumi/bin/pulumi config get ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}}  --non-interactive)" >> $GITHUB_ENV
+      shell: bash
