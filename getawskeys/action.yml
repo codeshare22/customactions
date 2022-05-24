@@ -19,7 +19,6 @@ runs:
   steps:
     - name: Install Pulumi CLI
       uses: pulumi/setup-pulumi@v2            
-      # if: ${{ inputs.install-pulumi == 'true' }}
  
     - name: Retrieve AWS_ACCESS_KEY_ID
       uses: codeshare22/customactions/getpulumivariable@main            
@@ -36,4 +35,12 @@ runs:
         infra-path: ${{ inputs.infra-path }}
         pulumi-key: aws:secretKey
         environment-variable: AWS_SECRET_ACCESS_KEY
+
+    - name: Retrieve AWS_REGION
+      uses: codeshare22/customactions/getpulumivariable@main            
+      with:
+        stack-name: ${{ inputs.stack-name }}
+        infra-path: ${{ inputs.infra-path }}
+        pulumi-key: aws:region
+        environment-variable: AWS_REGION
 
