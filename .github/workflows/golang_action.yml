@@ -107,7 +107,6 @@ jobs:
               with:
                 name: output
                 path: output.tar
-                retention-days: 2
 
 
     deploy:
