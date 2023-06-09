@@ -78,6 +78,7 @@ jobs:
                 mkdir -p output/
                 cp dist/${{ inputs.architecture }}/* output/
                 cp ${{ inputs.compile-path }}/docker/config*.yml output/
+                cp ${{ inputs.compile-path }}/docker/extra/* output/ 2>/dev/null || :
 
             # - name: Print working directory
             #   run: |
