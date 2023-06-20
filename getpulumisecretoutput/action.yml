@@ -22,5 +22,5 @@ runs:
     - name: Retrieve ${{ inputs.pulumi-key }} secret into ${{ inputs.environment-variable }}
       run: |
             echo  "::add-mask::$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}} --non-interactive --show-secrets)"
-            echo "${{ inputs.environment-variable }}=$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}}  --non-interactive --show-secrets)" >> $GITHUB_ENV
+            echo "${{ inputs.environment-variable }}=`$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}}  --non-interactive --show-secrets)`" >> $GITHUB_ENV
       shell: bash
