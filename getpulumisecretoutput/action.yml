@@ -20,11 +20,17 @@ runs:
   using: composite
   steps:
     - name: Retrieve ${{ inputs.pulumi-key }} secret into ${{ inputs.environment-variable }}
-      run: |
-            echo  "::add-mask::$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}} --non-interactive --show-secrets)"
+      run: |  
+            while read -r line;
+            do
+              echo "::add-mask::${line}"
+            done <<< $(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}} --non-interactive --show-secrets)
+            
             EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
             echo "${{ inputs.environment-variable }}<<$EOF" >> $GITHUB_ENV
             /usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}}  --non-interactive --show-secrets >> $GITHUB_ENV
             echo "$EOF" >> $GITHUB_ENV
       shell: bash
 #            echo "${{ inputs.environment-variable }}=$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}}  --non-interactive --show-secrets)" >> $GITHUB_ENV
+
+#             echo  "::add-mask::$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}} --non-interactive --show-secrets)"
