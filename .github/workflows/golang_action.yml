@@ -32,11 +32,23 @@ on:
             go-version:
                 required: true
                 type: string
+            sentry-release:
+                required: false
+                default: false
+                type: boolean
+            sentry-org:
+                required: false
+                type: string
+            sentry-project:
+                required: false
+                type: string
         secrets:
             GIT_BUILDBOT_TOKEN:
               required: true        
             PULUMI_ACCESS_TOKEN:
-              required: true        
+              required: true
+            SENTRY_AUTH_TOKEN:
+              required: false        
 jobs:
     preview:
         name: preview
@@ -71,7 +83,16 @@ jobs:
                   compile-path: ${{ inputs.compile-path }}
                   output-path: ../dist
                   version-root: ${{ inputs.version-root }}
-
+                  
+            - name: Create Sentry release
+              uses: getsentry/action-release@v1
+              if: inputs.sentry-release == true
+              env:
+                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                SENTRY_ORG: ${{ inputs.sentry-org }}
+                SENTRY_PROJECT: ${{ inputs.sentry-project }}
+              with:
+                environment: ${{ inputs.environment }}          
 
             - name: Prepare Docker
               run: |
