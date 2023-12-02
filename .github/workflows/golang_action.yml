@@ -84,16 +84,6 @@ jobs:
                   output-path: ../dist
                   version-root: ${{ inputs.version-root }}
                   
-            - name: Create Sentry release
-              uses: getsentry/action-release@v1
-              if: inputs.sentry-release == true
-              env:
-                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                SENTRY_ORG: ${{ inputs.sentry-org }}
-                SENTRY_PROJECT: ${{ inputs.sentry-project }}
-              with:
-                environment: ${{ inputs.environment }}          
-
             - name: Prepare Docker
               run: |
                 mkdir -p output/
@@ -150,6 +140,16 @@ jobs:
               with:
                   persist-credentials: false
 
+            - name: Create Sentry release
+              uses: getsentry/action-release@v1
+              if: inputs.sentry-release == true
+              env:
+                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                SENTRY_ORG: ${{ inputs.sentry-org }}
+                SENTRY_PROJECT: ${{ inputs.sentry-project }}
+              with:
+                environment: ${{ inputs.environment }}          
+    
             - name: Create output directory
               run: |
                 mkdir -p output/
