@@ -129,6 +129,9 @@ jobs:
         if: ${{ inputs.preview-only == false }}
         needs: preview
         runs-on: ubuntu-latest
+        concurrency:
+          group: ${{ inputs.app-name }}-${{ inputs.environment }}
+          cancel-in-progress: true        
         environment: ${{ inputs.environment }}
         env:
           CurrentDate: $(date +'%Y-%m-%dT%H:%M:%S')
@@ -140,16 +143,6 @@ jobs:
               with:
                   persist-credentials: false
 
-            - name: Create Sentry release
-              uses: getsentry/action-release@v1
-              if: inputs.sentry-release == true
-              env:
-                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                SENTRY_ORG: ${{ inputs.sentry-org }}
-                SENTRY_PROJECT: ${{ inputs.sentry-project }}
-              with:
-                environment: ${{ inputs.environment }}          
-    
             - name: Create output directory
               run: |
                 mkdir -p output/
@@ -178,6 +171,16 @@ jobs:
                   work-dir: ./infra/
                   stack-name: ${{ inputs.pulumi-stack }}
 
+            - name: Create Sentry release
+              uses: getsentry/action-release@v1
+              if: inputs.sentry-release == true
+              env:
+                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                SENTRY_ORG: ${{ inputs.sentry-org }}
+                SENTRY_PROJECT: ${{ inputs.sentry-project }}
+              with:
+                environment: ${{ inputs.environment }}          
+    
 
 
 
