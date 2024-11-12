@@ -44,36 +44,36 @@ on:
                 type: string
         secrets:
             GIT_BUILDBOT_TOKEN:
-              required: true        
+                required: true
             PULUMI_ACCESS_TOKEN:
-              required: true
+                required: true
             SENTRY_AUTH_TOKEN:
-              required: false        
+                required: false
 jobs:
     preview:
         name: preview
         runs-on: ubuntu-latest
         env:
-          CurrentDate: $(date +'%Y-%m-%dT%H:%M:%S')
-          GOPRIVATE: ${{ inputs.goprivate }}
-          GIT_BUILDBOT_TOKEN: ${{ secrets.GIT_BUILDBOT_TOKEN }}
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+            CurrentDate: $(date +'%Y-%m-%dT%H:%M:%S')
+            GOPRIVATE: ${{ inputs.goprivate }}
+            GIT_BUILDBOT_TOKEN: ${{ secrets.GIT_BUILDBOT_TOKEN }}
+            PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
         steps:
             - name: Echo some fields
               run: |
-                echo repository=${{ github.repository }}
-                echo GIT_BUILDBOT_TOKEN=$GIT_BUILDBOT_TOKEN
-                echo PULUMI_ACCESS_TOKEN=$PULUMI_ACCESS_TOKEN
+                  echo repository=${{ github.repository }}
+                  echo GIT_BUILDBOT_TOKEN=$GIT_BUILDBOT_TOKEN
+                  echo PULUMI_ACCESS_TOKEN=$PULUMI_ACCESS_TOKEN
 
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   persist-credentials: false
 
             - name: Set up Go
-              uses: actions/setup-go@v3
+              uses: actions/setup-go@v5
               with:
-                go-version: ${{ inputs.go-version }}
-                  
+                  go-version: ${{ inputs.go-version }}
+
             - name: Grant access to private repo
               run: git config --global url.https://$GIT_BUILDBOT_TOKEN@github.com/.insteadOf https://github.com/
 
@@ -83,13 +83,13 @@ jobs:
                   compile-path: ${{ inputs.compile-path }}
                   output-path: ../dist
                   version-root: ${{ inputs.version-root }}
-                  
+
             - name: Prepare Docker
               run: |
-                mkdir -p output/
-                cp dist/${{ inputs.architecture }}/* output/
-                cp ${{ inputs.compile-path }}/docker/config*.yml output/
-                cp ${{ inputs.compile-path }}/docker/extra/* output/ 2>/dev/null || :
+                  mkdir -p output/
+                  cp dist/${{ inputs.architecture }}/* output/
+                  cp ${{ inputs.compile-path }}/docker/config*.yml output/
+                  cp ${{ inputs.compile-path }}/docker/extra/* output/ 2>/dev/null || :
 
             # - name: Print working directory
             #   run: |
@@ -101,8 +101,7 @@ jobs:
                   stack-name: ${{ inputs.pulumi-stack }}
                   install-pulumi: true
 
-
-            - uses: pulumi/actions@v3
+            - uses: pulumi/actions@v6
               with:
                   command: preview
                   work-dir: ./infra/
@@ -118,11 +117,10 @@ jobs:
               run: tar -cvf output.tar output/
 
             - name: Upload result of deploy job
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
-                name: output
-                path: output.tar
-
+                  name: output
+                  path: output.tar
 
     deploy:
         name: deploy
@@ -130,30 +128,30 @@ jobs:
         needs: preview
         runs-on: ubuntu-latest
         concurrency:
-          group: ${{ inputs.app-name }}-${{ inputs.environment }}
-          cancel-in-progress: true        
+            group: ${{ inputs.app-name }}-${{ inputs.environment }}
+            cancel-in-progress: true
         environment: ${{ inputs.environment }}
         env:
-          CurrentDate: $(date +'%Y-%m-%dT%H:%M:%S')
-          GOPRIVATE: ${{ inputs.goprivate }}
-          GIT_BUILDBOT_TOKEN: ${{ secrets.GIT_BUILDBOT_TOKEN }}
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+            CurrentDate: $(date +'%Y-%m-%dT%H:%M:%S')
+            GOPRIVATE: ${{ inputs.goprivate }}
+            GIT_BUILDBOT_TOKEN: ${{ secrets.GIT_BUILDBOT_TOKEN }}
+            PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   persist-credentials: false
 
             - name: Create output directory
               run: |
-                mkdir -p output/
+                  mkdir -p output/
 
             - name: Download result of deploy job
-              uses: actions/download-artifact@v3
+              uses: actions/download-artifact@v4
               with:
-                name: output
+                  name: output
 
             - name: Untar files
-              run: tar -xvf output.tar 
+              run: tar -xvf output.tar
 
             - name: Get AWS Keys
               uses: codeshare22/customactions/getawskeys@main
@@ -164,8 +162,7 @@ jobs:
             - name: Grant access to private repo
               run: git config --global url.https://$GIT_BUILDBOT_TOKEN@github.com/.insteadOf https://github.com/
 
-
-            - uses: pulumi/actions@v3
+            - uses: pulumi/actions@v6
               with:
                   command: up
                   work-dir: ./infra/
@@ -175,26 +172,8 @@ jobs:
               uses: getsentry/action-release@v1
               if: inputs.sentry-release == true
               env:
-                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                SENTRY_ORG: ${{ inputs.sentry-org }}
-                SENTRY_PROJECT: ${{ inputs.sentry-project }}
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_ORG: ${{ inputs.sentry-org }}
+                  SENTRY_PROJECT: ${{ inputs.sentry-project }}
               with:
-                environment: ${{ inputs.environment }}          
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                  environment: ${{ inputs.environment }}
