@@ -21,6 +21,5 @@ runs:
   steps:
     - name: Retrieve ${{ inputs.pulumi-key }} into ${{ inputs.environment-variable }}
       run: |
-            echo  "::add-mask::$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}} --non-interactive)"
             echo "${{ inputs.environment-variable }}=$(/usr/local/bin/pulumi stack output ${{ inputs.pulumi-key }} -s ${{ inputs.stack-name }} -C ${{ inputs.infra-path}}  --non-interactive)" >> $GITHUB_ENV
       shell: bash
