@@ -84,6 +84,7 @@ jobs:
                   compile-path: ${{ inputs.compile-path }}
                   output-path: ../dist
                   version-root: ${{ inputs.version-root }}
+                  architecture: ${{ inputs.architecture }}
 
             - name: Prepare Docker
               run: |
