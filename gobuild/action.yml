@@ -26,7 +26,7 @@ runs:
     shell: bash
 
   - name: Echo current date
-    run: echo ${{ env.NOW }}
+    run: echo ${{ env.NOW }} ${{ inputs.architecture}}
     shell: bash
 
   - name: Build (Linux, ${{ inputs.architecture }})
