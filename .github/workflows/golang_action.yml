@@ -64,6 +64,7 @@ jobs:
                   echo repository=${{ github.repository }}
                   echo GIT_BUILDBOT_TOKEN=$GIT_BUILDBOT_TOKEN
                   echo PULUMI_ACCESS_TOKEN=$PULUMI_ACCESS_TOKEN
+                  echo architecture=${{ inputs.architecture }}
 
             - uses: actions/checkout@v4
               with:
