@@ -165,6 +165,18 @@ jobs:
             - name: Grant access to private repo
               run: git config --global url.https://$GIT_BUILDBOT_TOKEN@github.com/.insteadOf https://github.com/
 
+            # Set up QEMU for ARM64 emulation
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3
+              if: inputs.architecture == 'arm64'
+              with:
+                platforms: arm64  # Specify ARM64 as the target platform
+                
+            # Set up Docker Buildx for multi-architecture builds
+            - name: Set up Docker Buildx
+              if: inputs.architecture == 'arm64'
+              uses: docker/setup-buildx-action@v3
+
             - uses: pulumi/actions@v6
               with:
                   command: up
